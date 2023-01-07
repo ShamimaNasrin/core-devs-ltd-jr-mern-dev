@@ -4,6 +4,8 @@ import hitToast from '../helpers/hitToast';
 export default function SubscriptionForm() {
   let [email, setEmail] = useState('');
   let [alertClass, setAlertClass] = useState('');
+  const [loading, setLoading] = useState('');
+
   var parentComp = useRef();
 
   const handleSubmit = (e) => {
@@ -13,17 +15,23 @@ export default function SubscriptionForm() {
       setAlertClass('alert-validate');
       return;
     }
-    fetch('http://103.108.146.90:5000/sendemail', {
+    setLoading('subscribing..')
+    fetch('http://10.11.50.2:5000/sendemail', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ email })
-    }).then(res => res.text())
-      .then(data => JSON.parse(`${data}`))
-      .then(data => console.log(data))
-      // hitToast(data.message, data.success ? 'success' : 'error')
-      .catch(() => hitToast('Something went wrong. Please try again.', 'error'))
+    }).then(res => res.json())
+      // .then(data => JSON.parse(`${data}`))
+      .then(data => {
+        setLoading('')
+        hitToast(data.success ? 'success' : 'error', data.message)
+      })
+      .catch(() => {
+        setLoading('')
+        hitToast('error', 'Something went wrong. Please try again.')
+      })
 
     setAlertClass('');
   }
@@ -45,8 +53,10 @@ export default function SubscriptionForm() {
         <span className="focus-input100"></span>
       </div>
 
-      <button className="flex-c-m size3 s2-txt3 how-btn1 trans-04 where1">
-        Subscribe
+      <button type='submit' className="flex-c-m size3 s2-txt3 how-btn1 trans-04 where1">
+        {
+          loading ? loading : "Subscribe"
+        }
       </button>
     </form>
   );
